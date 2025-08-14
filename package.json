@@ -1,0 +1,114 @@
+{
+  "name": "ansybl-site",
+  "version": "1.0.0",
+  "description": "A dynamic content site powered by Activity Streams 2.0 feeds",
+  "main": "public/assets/js/app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "lint": "eslint public/assets/js/**/*.js",
+    "lint:fix": "eslint public/assets/js/**/*.js --fix",
+    "dev": "php -S localhost:8000 -t public",
+    "build": "npm run lint && npm run test:ci",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "activity-streams",
+    "feeds",
+    "cms",
+    "php",
+    "javascript",
+    "tdd"
+  ],
+  "author": "Ansybl Site",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.42.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.27.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testMatch": [
+      "<rootDir>/tests/js/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "public/assets/js/**/*.js",
+      "!public/assets/js/app.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/public/assets/js/$1"
+    }
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb-base"
+    ],
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "jest": true
+    },
+    "globals": {
+      "AnsyblConfig": "readonly",
+      "FeedManager": "readonly",
+      "ActivityRenderer": "readonly",
+      "UIManager": "readonly",
+      "AnsyblApp": "readonly"
+    },
+    "rules": {
+      "no-console": "warn",
+      "no-unused-vars": "error",
+      "prefer-const": "error",
+      "no-var": "error",
+      "object-shorthand": "error",
+      "prefer-template": "error",
+      "template-curly-spacing": "error",
+      "arrow-spacing": "error",
+      "prefer-arrow-callback": "error",
+      "arrow-parens": [
+        "error",
+        "always"
+      ],
+      "arrow-body-style": [
+        "error",
+        "as-needed"
+      ],
+      "no-confusing-arrow": "error",
+      "implicit-arrow-linebreak": "error",
+      "class-methods-use-this": "off",
+      "no-underscore-dangle": "off"
+    }
+  }
+}

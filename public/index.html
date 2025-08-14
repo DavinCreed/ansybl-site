@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title">Ansybl Site</title>
+    <meta name="description" content="A dynamic content site powered by Ansybl feeds">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/styles.css">
+    
+    <!-- Progressive Web App -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007cba">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Ansybl Site">
+    <meta property="og:description" content="A dynamic content site powered by Ansybl feeds">
+    <meta property="og:type" content="website">
+    
+    <!-- Activity Streams JSON-LD Context -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://www.w3.org/ns/activitystreams",
+        "@type": "Collection",
+        "name": "Ansybl Site",
+        "summary": "A dynamic content site powered by Ansybl feeds"
+    }
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="site-logo">
+                    <a href="/" id="site-logo-link">Ansybl Site</a>
+                </h1>
+                
+                <!-- Navigation Menu -->
+                <nav class="main-nav" id="main-navigation">
+                    <ul class="nav-list" id="nav-list">
+                        <!-- Dynamic menu items will be inserted here -->
+                    </ul>
+                    
+                    <!-- Mobile menu toggle -->
+                    <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation">
+                        <span class="hamburger"></span>
+                        <span class="hamburger"></span>
+                        <span class="hamburger"></span>
+                    </button>
+                </nav>
+                
+                <!-- Search -->
+                <div class="search-container">
+                    <input type="search" id="site-search" placeholder="Search feeds..." aria-label="Search content">
+                    <button class="search-button" id="search-button" aria-label="Search">🔍</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="site-main">
+        <div class="container">
+            
+            <!-- Loading State -->
+            <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+                <div class="spinner"></div>
+                <p>Loading feeds...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div id="error-message" class="error-message" aria-hidden="true" role="alert">
+                <h2>Unable to Load Content</h2>
+                <p id="error-details">There was an error loading the feeds. Please try again later.</p>
+                <button id="retry-button" class="retry-button">Retry</button>
+            </div>
+            
+            <!-- Content Area -->
+            <div id="content-area" class="content-area">
+                
+                <!-- Feed Filter/Sort Controls -->
+                <div class="content-controls">
+                    <div class="filter-controls">
+                        <label for="feed-filter">Filter by feed:</label>
+                        <select id="feed-filter" class="feed-filter">
+                            <option value="all">All Feeds</option>
+                            <!-- Dynamic feed options will be inserted here -->
+                        </select>
+                    </div>
+                    
+                    <div class="sort-controls">
+                        <label for="sort-order">Sort by:</label>
+                        <select id="sort-order" class="sort-order">
+                            <option value="published-desc">Newest First</option>
+                            <option value="published-asc">Oldest First</option>
+                            <option value="updated-desc">Recently Updated</option>
+                            <option value="title-asc">Title A-Z</option>
+                        </select>
+                    </div>
+                    
+                    <div class="view-controls">
+                        <button id="grid-view" class="view-button active" aria-label="Grid view">⊞</button>
+                        <button id="list-view" class="view-button" aria-label="List view">☰</button>
+                    </div>
+                </div>
+                
+                <!-- Activity Stream Items -->
+                <div id="activity-stream" class="activity-stream grid-view">
+                    <!-- Dynamic activity items will be inserted here -->
+                </div>
+                
+                <!-- Pagination -->
+                <div id="pagination" class="pagination">
+                    <button id="prev-page" class="pagination-button" disabled>← Previous</button>
+                    <span id="page-info" class="page-info">Page 1 of 1</span>
+                    <button id="next-page" class="pagination-button" disabled>Next →</button>
+                </div>
+                
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; <span id="current-year">2025</span> Ansybl Site</p>
+                    <p>Powered by <a href="https://www.w3.org/ns/activitystreams" target="_blank">Activity Streams 2.0</a></p>
+                </div>
+                
+                <div class="footer-links">
+                    <a href="#" id="about-link">About</a>
+                    <a href="#" id="feeds-link">Feeds</a>
+                    <a href="admin/" id="admin-link">Admin</a>
+                </div>
+                
+                <div class="footer-meta">
+                    <p id="last-updated">Last updated: <time id="last-updated-time">--</time></p>
+                    <p id="feed-count">0 feeds loaded</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Activity Item Template -->
+    <template id="activity-item-template">
+        <article class="activity-item" data-activity-type="" data-published="">
+            <header class="activity-header">
+                <div class="activity-actor">
+                    <img class="actor-avatar" src="" alt="" loading="lazy">
+                    <div class="actor-info">
+                        <h3 class="actor-name"></h3>
+                        <p class="actor-summary"></p>
+                    </div>
+                </div>
+                <time class="activity-time" datetime=""></time>
+            </header>
+            
+            <div class="activity-content">
+                <h2 class="activity-title"></h2>
+                <div class="activity-summary"></div>
+                
+                <!-- Activity Object (the main content) -->
+                <div class="activity-object">
+                    <!-- Content will be dynamically inserted based on object type -->
+                </div>
+                
+                <!-- Attachments -->
+                <div class="activity-attachments">
+                    <!-- Media attachments will be inserted here -->
+                </div>
+                
+                <!-- Tags -->
+                <div class="activity-tags">
+                    <!-- Tags will be inserted here -->
+                </div>
+            </div>
+            
+            <footer class="activity-footer">
+                <div class="activity-meta">
+                    <span class="feed-source"></span>
+                    <span class="activity-type"></span>
+                </div>
+                
+                <div class="activity-actions">
+                    <button class="share-button" aria-label="Share">Share</button>
+                    <a class="external-link" href="" target="_blank" rel="noopener">View Original</a>
+                </div>
+            </footer>
+        </article>
+    </template>
+
+    <!-- Media Attachment Template -->
+    <template id="media-template">
+        <div class="media-attachment" data-media-type="">
+            <img class="media-image" src="" alt="" loading="lazy">
+            <audio class="media-audio" controls style="display: none;">
+                <source src="" type="">
+                Your browser does not support the audio element.
+            </audio>
+            <video class="media-video" controls style="display: none;">
+                <source src="" type="">
+                Your browser does not support the video element.
+            </video>
+            <div class="media-caption"></div>
+        </div>
+    </template>
+
+    <!-- Tag Template -->
+    <template id="tag-template">
+        <span class="tag" data-tag-type="">
+            <a href="#" class="tag-link"></a>
+        </span>
+    </template>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/feedManager.js"></script>
+    <script src="assets/js/activityRenderer.js"></script>
+    <script src="assets/js/uiManager.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

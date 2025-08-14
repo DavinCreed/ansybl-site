@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "feeds": [
+    {
+      "id": "test-feed",
+      "name": "Test Feed",
+      "url": "https://example.com/feed.json",
+      "type": "json",
+      "enabled": true,
+      "menu_order": 1,
+      "menu_label": "Test",
+      "refresh_interval": 1800,
+      "cache_key": "test_feed_cache",
+      "display": {
+        "show_in_menu": true,
+        "max_items": 20,
+        "excerpt_length": 150
+      }
+    }
+  ],
+  "meta": {
+    "total_feeds": 1,
+    "active_feeds": 1,
+    "last_updated": "2025-01-15T10:30:00Z",
+    "schema_version": "1.0"
+  }
+}

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansybl Site Admin</title>
+    <meta name="description" content="Admin panel for managing Ansybl feeds and site configuration">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+    
+    <!-- Prevent indexing -->
+    <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="admin-body">
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="container">
+            <div class="admin-header-content">
+                <h1 class="admin-logo">
+                    <a href="/admin/">Ansybl Admin</a>
+                </h1>
+                
+                <nav class="admin-nav">
+                    <ul class="admin-nav-list">
+                        <li><a href="#feeds" class="nav-link active" data-section="feeds">Feeds</a></li>
+                        <li><a href="#config" class="nav-link" data-section="config">Site Config</a></li>
+                        <li><a href="#styles" class="nav-link" data-section="styles">Styles</a></li>
+                        <li><a href="#cache" class="nav-link" data-section="cache">Cache</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="admin-actions">
+                    <a href="../" class="view-site-button">View Site</a>
+                    <button id="save-all" class="save-button">Save All</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Main -->
+    <main class="admin-main">
+        <div class="container">
+            
+            <!-- Status Messages -->
+            <div id="status-messages" class="status-messages"></div>
+            
+            <!-- Feeds Management Section -->
+            <section id="feeds-section" class="admin-section active">
+                <header class="section-header">
+                    <h2>Feed Management</h2>
+                    <p>Manage Ansybl feeds, their display names, and menu ordering</p>
+                </header>
+                
+                <div class="section-content">
+                    
+                    <!-- Add New Feed Form -->
+                    <div class="card">
+                        <h3>Add New Feed</h3>
+                        <form id="add-feed-form" class="form-grid">
+                            <div class="form-group">
+                                <label for="feed-url">Feed URL</label>
+                                <input type="url" id="feed-url" placeholder="https://example.com/feed.ansybl" required>
+                                <small>URL to the Ansybl feed file</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="feed-name">Display Name</label>
+                                <input type="text" id="feed-name" placeholder="My Feed" required>
+                                <small>Name shown in navigation menu</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="feed-enabled">Enabled</label>
+                                <input type="checkbox" id="feed-enabled" checked>
+                                <small>Show this feed on the site</small>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <button type="submit" class="add-button">Add Feed</button>
+                                <button type="button" id="test-feed" class="test-button">Test Feed</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Existing Feeds List -->
+                    <div class="card">
+                        <h3>Current Feeds</h3>
+                        <div id="feeds-list" class="feeds-list">
+                            <!-- Dynamic feed items will be inserted here -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+            
+            <!-- Site Configuration Section -->
+            <section id="config-section" class="admin-section">
+                <header class="section-header">
+                    <h2>Site Configuration</h2>
+                    <p>General site settings and display preferences</p>
+                </header>
+                
+                <div class="section-content">
+                    
+                    <div class="card">
+                        <h3>Site Information</h3>
+                        <form id="site-config-form" class="form-grid">
+                            <div class="form-group">
+                                <label for="site-title">Site Title</label>
+                                <input type="text" id="site-title" placeholder="Ansybl Site">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="site-description">Description</label>
+                                <textarea id="site-description" rows="3" placeholder="A dynamic content site powered by Ansybl feeds"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="site-language">Language</label>
+                                <select id="site-language">
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="site-timezone">Timezone</label>
+                                <select id="site-timezone">
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">Eastern Time</option>
+                                    <option value="America/Chicago">Central Time</option>
+                                    <option value="America/Denver">Mountain Time</option>
+                                    <option value="America/Los_Angeles">Pacific Time</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Display Settings</h3>
+                        <form id="display-config-form" class="form-grid">
+                            <div class="form-group">
+                                <label for="items-per-page">Items Per Page</label>
+                                <input type="number" id="items-per-page" min="1" max="50" value="10">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="excerpt-length">Excerpt Length</label>
+                                <input type="number" id="excerpt-length" min="50" max="500" value="150">
+                                <small>Characters to show in content previews</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="date-format">Date Format</label>
+                                <select id="date-format">
+                                    <option value="Y-m-d H:i:s">2025-01-15 14:30:00</option>
+                                    <option value="M j, Y g:i A">Jan 15, 2025 2:30 PM</option>
+                                    <option value="F j, Y">January 15, 2025</option>
+                                    <option value="m/d/Y">01/15/2025</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="show-timestamps"> Show Timestamps
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="search-enabled"> Enable Search
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </section>
+            
+            <!-- Styles Section -->
+            <section id="styles-section" class="admin-section">
+                <header class="section-header">
+                    <h2>Style Management</h2>
+                    <p>Customize themes, colors, and responsive design</p>
+                </header>
+                
+                <div class="section-content">
+                    
+                    <div class="card">
+                        <h3>Theme Selection</h3>
+                        <div id="theme-selector" class="theme-selector">
+                            <!-- Dynamic theme options will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Theme Customization</h3>
+                        <form id="theme-form" class="form-grid">
+                            <div class="form-group">
+                                <label for="primary-color">Primary Color</label>
+                                <input type="color" id="primary-color" value="#007cba">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="secondary-color">Secondary Color</label>
+                                <input type="color" id="secondary-color" value="#333333">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="background-color">Background Color</label>
+                                <input type="color" id="background-color" value="#ffffff">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="text-color">Text Color</label>
+                                <input type="color" id="text-color" value="#333333">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <label for="font-family">Font Family</label>
+                                <select id="font-family">
+                                    <option value="'Arial', sans-serif">Arial</option>
+                                    <option value="'Helvetica Neue', sans-serif">Helvetica</option>
+                                    <option value="'Georgia', serif">Georgia</option>
+                                    <option value="'Times New Roman', serif">Times</option>
+                                    <option value="'Courier New', monospace">Courier</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Custom CSS</h3>
+                        <div class="custom-css-container">
+                            <label>
+                                <input type="checkbox" id="enable-custom-css"> Enable Custom CSS
+                            </label>
+                            <textarea id="custom-css" rows="10" placeholder="/* Add your custom CSS here */"></textarea>
+                            <div class="css-actions">
+                                <button type="button" id="validate-css" class="validate-button">Validate</button>
+                                <button type="button" id="minify-css" class="minify-button">Minify</button>
+                                <button type="button" id="preview-css" class="preview-button">Preview</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Responsive Settings</h3>
+                        <form id="responsive-form" class="form-grid">
+                            <div class="form-group">
+                                <label for="mobile-breakpoint">Mobile Breakpoint</label>
+                                <input type="text" id="mobile-breakpoint" value="768px">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="tablet-breakpoint">Tablet Breakpoint</label>
+                                <input type="text" id="tablet-breakpoint" value="1024px">
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <button type="button" id="generate-css" class="generate-button">Generate CSS</button>
+                                <button type="button" id="export-theme" class="export-button">Export Theme</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </section>
+            
+            <!-- Cache Management Section -->
+            <section id="cache-section" class="admin-section">
+                <header class="section-header">
+                    <h2>Cache Management</h2>
+                    <p>Monitor and manage feed caching and performance</p>
+                </header>
+                
+                <div class="section-content">
+                    
+                    <div class="card">
+                        <h3>Cache Statistics</h3>
+                        <div id="cache-stats" class="stats-grid">
+                            <!-- Dynamic cache statistics will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Cache Actions</h3>
+                        <div class="cache-actions">
+                            <button type="button" id="refresh-all-feeds" class="refresh-button">Refresh All Feeds</button>
+                            <button type="button" id="clear-cache" class="clear-button">Clear Cache</button>
+                            <button type="button" id="cleanup-expired" class="cleanup-button">Cleanup Expired</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Cache Details</h3>
+                        <div id="cache-details" class="cache-details">
+                            <!-- Dynamic cache details will be inserted here -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+            
+        </div>
+    </main>
+
+    <!-- Admin Footer -->
+    <footer class="admin-footer">
+        <div class="container">
+            <div class="admin-footer-content">
+                <p>&copy; 2025 Ansybl Site Admin</p>
+                <p>Backend Status: <span id="backend-status" class="status-indicator">Connected</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Feed Item Template -->
+    <template id="feed-item-template">
+        <div class="feed-item" data-feed-id="">
+            <div class="feed-info">
+                <h4 class="feed-name"></h4>
+                <p class="feed-url"></p>
+                <div class="feed-meta">
+                    <span class="feed-status"></span>
+                    <span class="feed-last-updated"></span>
+                    <span class="feed-item-count"></span>
+                </div>
+            </div>
+            
+            <div class="feed-controls">
+                <label class="toggle">
+                    <input type="checkbox" class="feed-enabled-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                
+                <button class="feed-action-button edit-feed" title="Edit">✏️</button>
+                <button class="feed-action-button refresh-feed" title="Refresh">🔄</button>
+                <button class="feed-action-button delete-feed" title="Delete">🗑️</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Scripts -->
+    <script src="../assets/js/config.js"></script>
+    <script src="assets/js/adminAPI.js"></script>
+    <script src="assets/js/feedManager.js"></script>
+    <script src="assets/js/configManager.js"></script>
+    <script src="assets/js/styleManager.js"></script>
+    <script src="assets/js/cacheManager.js"></script>
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>

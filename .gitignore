@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+/dist
+/build
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Cache directories
+.npm
+.eslintcache
+.cache/
+.parcel-cache
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Data files (keep structure but ignore content)
+data/cache/*
+!data/cache/.gitkeep
+data/config/*.json
+!data/config/.gitkeep
+data/styles/compiled-*.css
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# Test artifacts
+tests/tmp/*
+!tests/tmp/.gitkeep
+
+# PHP specific
+composer.phar
+phpunit.phar
+/.phpunit.cache
+
+# Generated documentation
+/docs/api/
+/docs/coverage/
+
+# Local development
+.local/
+public/assets/css/styles-compiled.css
