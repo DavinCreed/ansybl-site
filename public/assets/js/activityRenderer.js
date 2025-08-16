@@ -35,6 +35,7 @@ class ActivityRenderer {
     this.renderers.set('Audio', this.renderAudio.bind(this));
     this.renderers.set('Document', this.renderDocument.bind(this));
     this.renderers.set('Link', this.renderLink.bind(this));
+    this.renderers.set('Collection', this.renderCollection.bind(this));
 
     // Activity type renderers
     this.renderers.set('Create', this.renderCreateActivity.bind(this));
@@ -522,6 +523,89 @@ class ActivityRenderer {
     }
   }
 
+  renderCollection(activityItem, element) {
+    const title = element.querySelector('.activity-title');
+    const summary = element.querySelector('.activity-summary');
+    const content = element.querySelector('.activity-object');
+
+    // Use the collection name as title - check object.name first, then fallback to objectName
+    const collectionName = activityItem.object?.name || activityItem.objectName || activityItem.name || 'Collection';
+    title.textContent = collectionName;
+
+    // Use the collection summary
+    if (activityItem.objectSummary || activityItem.summary) {
+      summary.textContent = activityItem.objectSummary || activityItem.summary;
+    } else {
+      summary.style.display = 'none';
+    }
+
+    // Render nested items from the collection
+    const collectionObject = activityItem.object;
+    if (collectionObject && collectionObject.items && Array.isArray(collectionObject.items)) {
+      const itemsContainer = document.createElement('div');
+      itemsContainer.className = 'collection-items';
+      itemsContainer.style.marginTop = 'var(--spacing-md)';
+
+      collectionObject.items.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `collection-item item-${item.type?.toLowerCase() || 'unknown'}`;
+        itemDiv.style.marginBottom = 'var(--spacing-md)';
+        itemDiv.style.padding = 'var(--spacing-md)';
+        itemDiv.style.border = '1px solid #e9ecef';
+        itemDiv.style.borderRadius = 'var(--border-radius)';
+        itemDiv.style.background = '#f8f9fa';
+
+        if (item.type === 'Article' && item.content) {
+          // Render article content with markdown-style formatting
+          const articleContent = document.createElement('div');
+          articleContent.className = 'article-content';
+          articleContent.innerHTML = this.formatMarkdownContent(item.content);
+          itemDiv.appendChild(articleContent);
+        } else if (item.type === 'Audio' && item.url) {
+          // Render audio player
+          const audioContainer = document.createElement('div');
+          audioContainer.className = 'audio-container';
+          
+          const audioTitle = document.createElement('h4');
+          audioTitle.textContent = 'Audio';
+          audioTitle.style.marginBottom = 'var(--spacing-sm)';
+          audioTitle.style.fontSize = '1.1em';
+          audioContainer.appendChild(audioTitle);
+
+          const audio = document.createElement('audio');
+          audio.controls = true;
+          audio.style.width = '100%';
+          
+          // Handle URL object or direct URL string
+          const audioUrl = item.url.href || item.url;
+          audio.src = audioUrl;
+          
+          // Add duration if available
+          if (item.duration) {
+            audio.title = `Duration: ${this.formatDuration(item.duration)}`;
+          }
+
+          audioContainer.appendChild(audio);
+          itemDiv.appendChild(audioContainer);
+        }
+
+        itemsContainer.appendChild(itemDiv);
+      });
+
+      content.appendChild(itemsContainer);
+    }
+
+    // Also render collection content if available
+    const collectionContent = activityItem.objectContent || activityItem.content;
+    if (collectionContent) {
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'collection-content';
+      contentDiv.style.marginBottom = 'var(--spacing-md)';
+      contentDiv.innerHTML = this.formatMarkdownContent(collectionContent);
+      content.insertBefore(contentDiv, content.firstChild);
+    }
+  }
+
   /**
      * Activity-specific renderers
      */
@@ -531,6 +615,7 @@ class ActivityRenderer {
     if (activityItem.object) {
       const objectType = activityItem.object.type || 'Object';
       const renderer = this.renderers.get(objectType) || this.renderDefault.bind(this);
+      
       renderer(activityItem, element);
     } else {
       this.renderDefault(activityItem, element);
@@ -631,6 +716,100 @@ class ActivityRenderer {
     const div = document.createElement('div');
     div.textContent = html;
     return div.innerHTML;
+  }
+
+  /**
+   * Format markdown-style content to HTML
+   */
+  formatMarkdownContent(content) {
+    if (!content) return '';
+    
+    console.log('formatMarkdownContent called with:', JSON.stringify(content));
+    console.log('First line:', JSON.stringify(content.split('\n')[0]));
+    console.log('First line starts with #?', content.split('\n')[0].startsWith('#'));
+    
+    // Split content by lines for line-by-line processing
+    const lines = content.split('\n');
+    const processedLines = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i];
+      
+      // Process headers first
+      if (line.startsWith('# ')) {
+        processedLines.push('<h1>' + line.substring(2) + '</h1>');
+      } else if (line.startsWith('## ')) {
+        processedLines.push('<h2>' + line.substring(3) + '</h2>');
+      } else if (line.startsWith('### ')) {
+        processedLines.push('<h3>' + line.substring(4) + '</h3>');
+      } else if (line.trim() === '') {
+        // Empty line
+        processedLines.push('');
+      } else {
+        // Regular text line - process inline formatting
+        line = line
+          // Bold text
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          // Italic text (but not bold)
+          .replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+        
+        processedLines.push(line);
+      }
+    }
+    
+    // Now group lines into paragraphs, but keep headers separate
+    const result = [];
+    let currentParagraph = [];
+    
+    for (const line of processedLines) {
+      if (line.startsWith('<h') && line.includes('</h')) {
+        // Header - flush current paragraph and add header
+        if (currentParagraph.length > 0) {
+          result.push('<p>' + currentParagraph.join('<br>') + '</p>');
+          currentParagraph = [];
+        }
+        result.push(line);
+      } else if (line.trim() === '') {
+        // Empty line - end current paragraph
+        if (currentParagraph.length > 0) {
+          result.push('<p>' + currentParagraph.join('<br>') + '</p>');
+          currentParagraph = [];
+        }
+      } else {
+        // Regular line - add to current paragraph
+        currentParagraph.push(line);
+      }
+    }
+    
+    // Don't forget the last paragraph
+    if (currentParagraph.length > 0) {
+      result.push('<p>' + currentParagraph.join('<br>') + '</p>');
+    }
+    
+    const finalResult = result.join('');
+    console.log('formatMarkdownContent result:', finalResult);
+    return finalResult;
+  }
+
+  /**
+   * Format ISO 8601 duration (PT25M) to readable format
+   */
+  formatDuration(duration) {
+    if (!duration || !duration.startsWith('PT')) return duration;
+    
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return duration;
+    
+    const hours = parseInt(match[1] || '0');
+    const minutes = parseInt(match[2] || '0');
+    const seconds = parseInt(match[3] || '0');
+    
+    const parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0) parts.push(`${seconds}s`);
+    
+    return parts.join(' ') || '0s';
   }
 
   /**

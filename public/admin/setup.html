@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansybl Admin Setup</title>
+    <meta name="description" content="First-time setup for Ansybl Site administration">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+    
+    <!-- Prevent indexing -->
+    <meta name="robots" content="noindex, nofollow">
+    
+    <style>
+        .setup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        
+        .setup-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 480px;
+        }
+        
+        .setup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .setup-logo {
+            color: #667eea;
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .setup-subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .password-requirements {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .setup-button {
+            width: 100%;
+            padding: 14px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+        
+        .setup-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .setup-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #363;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .setup-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .setup-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .setup-info p {
+            margin: 0;
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <div class="setup-logo">Ansybl</div>
+                <div class="setup-subtitle">Admin Setup</div>
+            </div>
+            
+            <div class="setup-info">
+                <h3>Welcome to Ansybl Site!</h3>
+                <p>This appears to be your first time accessing the admin panel. Please create your administrator account to get started.</p>
+            </div>
+            
+            <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                Creating your admin account...
+            </div>
+            
+            <form id="setup-form">
+                <div class="form-group">
+                    <label for="username">Admin Username</label>
+                    <input type="text" id="username" name="username" required 
+                           minlength="3" maxlength="50" 
+                           pattern="[a-zA-Z0-9_-]+" 
+                           placeholder="Enter your username">
+                    <div class="password-requirements">
+                        3-50 characters, letters, numbers, underscore, and dash only
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           minlength="8" 
+                           placeholder="Enter a secure password">
+                    <div class="password-requirements">
+                        Minimum 8 characters, include letters and numbers
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required 
+                           placeholder="Confirm your password">
+                </div>
+                
+                <button type="submit" class="setup-button" id="setup-button">
+                    Create Admin Account
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 30px; color: #666; font-size: 0.9em;">
+                This will create your administrator account and redirect you to the admin panel.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AdminSetup {
+            constructor() {
+                this.form = document.getElementById('setup-form');
+                this.usernameInput = document.getElementById('username');
+                this.passwordInput = document.getElementById('password');
+                this.confirmPasswordInput = document.getElementById('confirm-password');
+                this.submitButton = document.getElementById('setup-button');
+                this.errorMessage = document.getElementById('error-message');
+                this.successMessage = document.getElementById('success-message');
+                this.loading = document.getElementById('loading');
+                
+                this.initializeEventListeners();
+            }
+            
+            initializeEventListeners() {
+                this.form.addEventListener('submit', this.handleSubmit.bind(this));
+                this.confirmPasswordInput.addEventListener('input', this.validatePasswordMatch.bind(this));
+                this.passwordInput.addEventListener('input', this.validatePasswordMatch.bind(this));
+                this.usernameInput.addEventListener('input', this.validateUsername.bind(this));
+            }
+            
+            validateUsername() {
+                const username = this.usernameInput.value;
+                const isValid = /^[a-zA-Z0-9_-]{3,50}$/.test(username);
+                
+                if (username.length > 0 && !isValid) {
+                    this.usernameInput.setCustomValidity('Username must be 3-50 characters with only letters, numbers, underscore, and dash');
+                } else {
+                    this.usernameInput.setCustomValidity('');
+                }
+            }
+            
+            validatePasswordMatch() {
+                const password = this.passwordInput.value;
+                const confirmPassword = this.confirmPasswordInput.value;
+                
+                if (confirmPassword.length > 0 && password !== confirmPassword) {
+                    this.confirmPasswordInput.setCustomValidity('Passwords do not match');
+                } else {
+                    this.confirmPasswordInput.setCustomValidity('');
+                }
+                
+                // Basic password strength check
+                if (password.length > 0 && password.length < 8) {
+                    this.passwordInput.setCustomValidity('Password must be at least 8 characters');
+                } else if (password.length > 0 && !/(?=.*[a-zA-Z])(?=.*[0-9])/.test(password)) {
+                    this.passwordInput.setCustomValidity('Password must contain both letters and numbers');
+                } else {
+                    this.passwordInput.setCustomValidity('');
+                }
+            }
+            
+            async handleSubmit(event) {
+                event.preventDefault();
+                
+                const username = this.usernameInput.value;
+                const password = this.passwordInput.value;
+                const confirmPassword = this.confirmPasswordInput.value;
+                
+                // Final validation
+                if (password !== confirmPassword) {
+                    this.showError('Passwords do not match');
+                    return;
+                }
+                
+                if (password.length < 8) {
+                    this.showError('Password must be at least 8 characters');
+                    return;
+                }
+                
+                if (!/^[a-zA-Z0-9_-]{3,50}$/.test(username)) {
+                    this.showError('Invalid username format');
+                    return;
+                }
+                
+                await this.createAdminAccount(username, password);
+            }
+            
+            async createAdminAccount(username, password) {
+                this.setLoading(true);
+                this.hideMessages();
+                
+                try {
+                    const response = await fetch('../api/auth.php/setup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.showSuccess('Admin account created successfully! Redirecting to login...');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 2000);
+                    } else {
+                        this.showError(data.error?.message || 'Failed to create admin account');
+                    }
+                    
+                } catch (error) {
+                    console.error('Setup error:', error);
+                    this.showError('Network error. Please check your connection and try again.');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+            
+            setLoading(isLoading) {
+                this.loading.style.display = isLoading ? 'block' : 'none';
+                this.submitButton.disabled = isLoading;
+            }
+            
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+                this.successMessage.style.display = 'none';
+            }
+            
+            showSuccess(message) {
+                this.successMessage.textContent = message;
+                this.successMessage.style.display = 'block';
+                this.errorMessage.style.display = 'none';
+            }
+            
+            hideMessages() {
+                this.errorMessage.style.display = 'none';
+                this.successMessage.style.display = 'none';
+            }
+        }
+        
+        // Initialize setup when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new AdminSetup();
+        });
+    </script>
+</body>
+</html>

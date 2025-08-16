@@ -1,0 +1,22 @@
+{
+    "version": "1.0",
+    "feeds": [
+        {
+            "id": "testfeed",
+            "name": "Test Feed",
+            "url": "https://utify.com/example_podcast_feed.ansybl",
+            "enabled": true,
+            "order": 1,
+            "added": "2025-08-16T03:41:07+00:00",
+            "lastFetched": null
+        }
+    ],
+    "meta": {
+        "total_feeds": 1,
+        "active_feeds": 1,
+        "last_updated": "2025-08-16T03:41:07+00:00",
+        "schema_version": "1.0",
+        "created": "2025-08-16T03:41:07+00:00",
+        "modified": "2025-08-16T03:41:07+00:00"
+    }
+}

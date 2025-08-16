@@ -1,5 +1,65 @@
 /* Admin-specific styles extending the base styles */
 
+/* Authentication Styles */
+.current-user {
+  color: #bdc3c7;
+  margin-right: var(--spacing-md);
+  font-size: 0.9rem;
+}
+
+.current-username {
+  color: white;
+  font-weight: 600;
+}
+
+.logout-button {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+  margin-left: var(--spacing-sm);
+}
+
+.logout-button:hover {
+  background: #c0392b;
+}
+
+.session-warning {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.status-indicator {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-indicator.connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-indicator.disconnected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
 /* Admin Layout */
 .admin-body {
   background: #f5f5f5;

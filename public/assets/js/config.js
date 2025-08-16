@@ -7,10 +7,10 @@ const AnsyblConfig = {
   // API Endpoints
   api: {
     base: '/api',
-    feeds: '/api/feeds',
-    config: '/api/config',
-    styles: '/api/styles',
-    cache: '/api/cache',
+    feeds: '/api/feeds.php',
+    config: '/api/config.php',
+    styles: '/api/styles.php',
+    cache: '/api/cache.php',
   },
 
   // Activity Streams 2.0 Context

@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once '../vendor/autoload.php';
+require_once '../../vendor/autoload.php';
 
 use AnsyblSite\Core\ConcurrentFileManager;
 use AnsyblSite\Core\ConfigManager;
@@ -24,7 +24,7 @@ use AnsyblSite\Core\FeedParser;
 
 try {
     // Initialize core components
-    $fileManager = new ConcurrentFileManager('../data');
+    $fileManager = new ConcurrentFileManager('../../data');
     $configManager = new ConfigManager($fileManager);
     $feedCache = new FeedCache($fileManager);
     

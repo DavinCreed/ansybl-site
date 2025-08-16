@@ -54,8 +54,8 @@ class FeedManager {
      */
     async loadFeedConfigs() {
         try {
-            const response = await this.fetchWithRetry('/api/config/feeds');
-            const feedsConfig = response.feeds || [];
+            const response = await this.fetchWithRetry(AnsyblConfig.api.feeds);
+            const feedsConfig = response.data?.feeds || [];
             
             this.feedConfigs.clear();
             feedsConfig.forEach(feed => {
@@ -132,10 +132,18 @@ class FeedManager {
         }
         
         try {
-            AnsyblConfig.utils.log('debug', `Fetching feed: ${config.url}`);
+            AnsyblConfig.utils.log('debug', `Fetching cached feed: ${feedId}`);
             
-            const response = await this.fetchWithRetry(config.url);
-            const feedData = this.validateAndProcessFeed(response, feedId);
+            // Get cached data from backend instead of external URL
+            const cacheUrl = `${AnsyblConfig.api.cache}/feeds/${feedId}`;
+            const cacheResponse = await this.fetchWithRetry(cacheUrl);
+            
+            // Extract the processed feed data from cache response
+            if (!cacheResponse.success || !cacheResponse.data?.feed?.data) {
+                throw new Error(`No cached data found for feed: ${feedId}`);
+            }
+            
+            const feedData = cacheResponse.data.feed.data;
             
             // Store processed feed data
             this.feeds.set(feedId, {

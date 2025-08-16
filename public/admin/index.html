@@ -32,8 +32,12 @@
                 </nav>
                 
                 <div class="admin-actions">
+                    <span class="current-user">
+                        Welcome, <span class="current-username">Admin</span>
+                    </span>
                     <a href="../" class="view-site-button">View Site</a>
                     <button id="save-all" class="save-button">Save All</button>
+                    <button id="logout-button" class="logout-button" onclick="window.adminAuth.logout()">Logout</button>
                 </div>
             </div>
         </div>
@@ -347,6 +351,7 @@
 
     <!-- Scripts -->
     <script src="../assets/js/config.js"></script>
+    <script src="assets/js/auth.js"></script>
     <script src="assets/js/adminAPI.js"></script>
     <script src="assets/js/feedManager.js"></script>
     <script src="assets/js/configManager.js"></script>

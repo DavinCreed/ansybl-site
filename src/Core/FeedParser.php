@@ -177,21 +177,115 @@ class FeedParser
         
         foreach ($items as $item) {
             if ($this->isCollection($item)) {
-                if ($includeCollections) {
-                    $flattened[] = $item;
-                }
+                // Convert Collection to proper Activity (only one per collection)
+                $activity = $this->convertCollectionToActivity($item);
+                $flattened[] = $activity;
                 
-                // Recursively flatten nested items
-                if (isset($item['items'])) {
-                    $nested = $this->flattenItems($item, $includeCollections);
-                    $flattened = array_merge($flattened, $nested);
-                }
+                // Don't create separate activities for nested items - they're part of the collection
             } else {
-                $flattened[] = $item;
+                // Convert standalone objects to activities
+                $activity = $this->convertObjectToActivity($item);
+                $flattened[] = $activity;
             }
         }
         
         return $flattened;
+    }
+    
+    /**
+     * Convert a Collection to a proper Activity
+     */
+    private function convertCollectionToActivity(array $collection): array
+    {
+        return [
+            'type' => 'Create',
+            'id' => ($collection['id'] ?? uniqid()) . '#activity',
+            'actor' => $collection['attributedTo'][0] ?? [
+                'type' => 'Person',
+                'name' => 'Unknown Author'
+            ],
+            'object' => [
+                'type' => 'Collection',
+                'id' => $collection['id'] ?? uniqid(),
+                'name' => $collection['name'] ?? 'Untitled Collection',
+                'summary' => $collection['summary'] ?? null,
+                'content' => $this->extractCollectionContent($collection),
+                'totalItems' => $collection['totalItems'] ?? count($collection['items'] ?? []),
+                'url' => $collection['id'] ?? null,
+                'items' => $collection['items'] ?? []  // Preserve the nested items
+            ],
+            'published' => $this->extractOrGenerateDate($collection),
+            'summary' => $collection['summary'] ?? $collection['name'] ?? 'New collection',
+            'feedId' => $collection['feedId'] ?? 'unknown'
+        ];
+    }
+    
+    /**
+     * Convert an Object to a proper Activity
+     */
+    private function convertObjectToActivity(array $object, array $parentCollection = null): array
+    {
+        return [
+            'type' => 'Create',
+            'id' => ($object['id'] ?? uniqid()) . '#activity',
+            'actor' => $parentCollection['attributedTo'][0] ?? 
+                      $object['attributedTo'][0] ?? [
+                          'type' => 'Person',
+                          'name' => 'Unknown Author'
+                      ],
+            'object' => $object,
+            'published' => $this->extractOrGenerateDate($object, $parentCollection),
+            'summary' => $object['summary'] ?? $object['name'] ?? 'New ' . strtolower($object['type'] ?? 'item'),
+            'feedId' => $object['feedId'] ?? $parentCollection['feedId'] ?? 'unknown'
+        ];
+    }
+    
+    /**
+     * Extract content from a collection's items
+     */
+    private function extractCollectionContent(array $collection): string
+    {
+        if (!isset($collection['items']) || !is_array($collection['items'])) {
+            return $collection['summary'] ?? '';
+        }
+        
+        $content = [];
+        foreach ($collection['items'] as $item) {
+            if (isset($item['content'])) {
+                $content[] = $item['content'];
+            } elseif (isset($item['summary'])) {
+                $content[] = $item['summary'];
+            }
+        }
+        
+        return implode("\n\n", $content);
+    }
+    
+    /**
+     * Extract or generate a published date
+     */
+    private function extractOrGenerateDate(array $item, array $parentItem = null): string
+    {
+        // Try to find a date in the item
+        $dateFields = ['published', 'updated', 'created', 'datePublished', 'dateCreated'];
+        
+        foreach ($dateFields as $field) {
+            if (isset($item[$field])) {
+                return $item[$field];
+            }
+        }
+        
+        // Try parent item
+        if ($parentItem) {
+            foreach ($dateFields as $field) {
+                if (isset($parentItem[$field])) {
+                    return $parentItem[$field];
+                }
+            }
+        }
+        
+        // Generate current timestamp as fallback
+        return date('c');
     }
     
     private function registerFeedSchemas(): void
