@@ -59,33 +59,56 @@
                 
                 <div class="section-content">
                     
-                    <!-- Add New Feed Form -->
+                    <!-- Feed Type Selection -->
                     <div class="card">
                         <h3>Add New Feed</h3>
-                        <form id="add-feed-form" class="form-grid">
+                        <div class="feed-type-selector">
+                            <div class="feed-type-options">
+                                <button type="button" class="feed-type-btn active" data-type="external">
+                                    🌐 External Feed
+                                </button>
+                                <button type="button" class="feed-type-btn" data-type="local">
+                                    📍 Local Feed
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- External Feed Form -->
+                        <form id="add-external-feed-form" class="form-grid feed-form active">
                             <div class="form-group">
-                                <label for="feed-url">Feed URL</label>
-                                <input type="url" id="feed-url" placeholder="https://example.com/feed.ansybl" required>
+                                <label for="external-feed-url">Feed URL</label>
+                                <input type="url" id="external-feed-url" placeholder="https://example.com/feed.ansybl" required>
                                 <small>URL to the Ansybl feed file</small>
                             </div>
                             
                             <div class="form-group">
-                                <label for="feed-name">Display Name</label>
-                                <input type="text" id="feed-name" placeholder="My Feed" required>
+                                <label for="external-feed-name">Display Name</label>
+                                <input type="text" id="external-feed-name" placeholder="My Feed" required>
                                 <small>Name shown in navigation menu</small>
                             </div>
                             
                             <div class="form-group">
-                                <label for="feed-enabled">Enabled</label>
-                                <input type="checkbox" id="feed-enabled" checked>
+                                <label for="external-feed-enabled">Enabled</label>
+                                <input type="checkbox" id="external-feed-enabled" checked>
                                 <small>Show this feed on the site</small>
                             </div>
                             
                             <div class="form-group full-width">
-                                <button type="submit" class="add-button">Add Feed</button>
-                                <button type="button" id="test-feed" class="test-button">Test Feed</button>
+                                <button type="submit" class="add-button">Add External Feed</button>
+                                <button type="button" id="test-external-feed" class="test-button">Test Feed</button>
                             </div>
                         </form>
+                        
+                        <!-- Local Feed Form -->
+                        <div id="add-local-feed-form" class="form-grid feed-form">
+                            <div class="local-feed-info">
+                                <p>Create a new feed that will be stored locally on your server. You can add articles, audio, images, and other content types to this feed.</p>
+                            </div>
+                            
+                            <div class="form-group full-width">
+                                <button type="button" class="add-button create-local-feed-btn">Create Local Feed</button>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Existing Feeds List -->
@@ -352,11 +375,9 @@
     <!-- Scripts -->
     <script src="../assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
-    <script src="assets/js/adminAPI.js"></script>
-    <script src="assets/js/feedManager.js"></script>
-    <script src="assets/js/configManager.js"></script>
-    <script src="assets/js/styleManager.js"></script>
-    <script src="assets/js/cacheManager.js"></script>
+    <script src="assets/js/localFeedManager.js"></script>
+    <script src="assets/js/feedItemManager.js"></script>
+    <script src="assets/js/mediaManager.js"></script>
     <script src="assets/js/admin.js"></script>
 </body>
 </html>

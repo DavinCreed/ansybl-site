@@ -1,0 +1,48 @@
+{
+    "id": "test-home",
+    "name": "Test Home",
+    "description": "The home feed of the web site.",
+    "author": {
+        "type": "Person",
+        "name": "Davin"
+    },
+    "language": "en",
+    "created": "2025-08-17T17:20:20+00:00",
+    "updated": "2025-08-18T00:40:48+00:00",
+    "published": true,
+    "url": "http://localhost:8000/feeds/test-home.ansybl",
+    "items": [
+        {
+            "id": "test-home-item-68a21013848c6",
+            "type": "Collection",
+            "name": "Home",
+            "content": "# Welcome to the test site.\n\nThis site is testing out using feeds as the content that people can subscribe to individually or later, a mega feed that tracks all changes.",
+            "summary": "This describes the home page.",
+            "published": "2025-08-18T00:20",
+            "updated": "2025-08-18T00:40:48+00:00",
+            "attachment": [],
+            "tag": [],
+            "items": [
+                {
+                    "type": "Article",
+                    "name": "Home",
+                    "summary": "This describes the home page.",
+                    "content": "# Welcome to the test site.\n\nThis site is testing out using feeds as the content that people can subscribe to individually or later, a mega feed that tracks all changes."
+                },
+                {
+                    "type": "Audio",
+                    "url": "https://s3.amazonaws.com/GEAH/2014-03-16_episode_-_12_-_temple_of_ruin.mp3",
+                    "duration": "PT25M",
+                    "mediaType": "audio/mp3"
+                }
+            ],
+            "totalItems": 2
+        }
+    ],
+    "totalItems": 1,
+    "meta": {
+        "version": "1.0",
+        "schema_version": "1.0",
+        "created": "2025-08-17T17:20:20+00:00"
+    }
+}

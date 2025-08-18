@@ -1,0 +1,64 @@
+{
+    "id": "test-local-feed-1",
+    "name": "Test Local Feed",
+    "description": "A test feed for Activity Streams 2.0 compliance",
+    "author": {
+        "type": "Person",
+        "name": "Test Author"
+    },
+    "language": "en",
+    "created": "2025-08-17T07:49:15+00:00",
+    "updated": "2025-08-17T07:49:15+00:00",
+    "published": true,
+    "url": "http://localhost/feeds/test-local-feed-1.ansybl",
+    "items": [
+        {
+            "id": "test-local-feed-1-item-68a1897ba1836",
+            "type": "Article",
+            "name": "Test Article",
+            "content": "# Test Article\\n\\nThis is a **test article** with *markdown* content.",
+            "summary": "A test article for Activity Streams compliance",
+            "published": "2025-08-17T07:49:15+00:00",
+            "updated": "2025-08-17T07:49:15+00:00",
+            "attachment": [],
+            "tag": [
+                "test",
+                "article"
+            ]
+        },
+        {
+            "id": "test-local-feed-1-item-68a1897bad2ec",
+            "type": "Audio",
+            "name": "Test Podcast Episode",
+            "content": "This is a test podcast episode about Activity Streams.",
+            "summary": "",
+            "published": "2025-08-17T07:49:15+00:00",
+            "updated": "2025-08-17T07:49:15+00:00",
+            "url": "https://example.com/test-audio.mp3",
+            "mediaType": "audio/mpeg",
+            "duration": "PT15M30S",
+            "attachment": [],
+            "tag": [
+                "test",
+                "podcast"
+            ]
+        },
+        {
+            "id": "test-local-feed-1-item-68a1897bb30f1",
+            "type": "Note",
+            "name": "Test Note",
+            "content": "This is a short test note.",
+            "summary": "",
+            "published": "2025-08-17T07:49:15+00:00",
+            "updated": "2025-08-17T07:49:15+00:00",
+            "attachment": [],
+            "tag": []
+        }
+    ],
+    "totalItems": 3,
+    "meta": {
+        "version": "1.0",
+        "schema_version": "1.0",
+        "created": "2025-08-17T07:49:15+00:00"
+    }
+}

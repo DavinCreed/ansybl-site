@@ -50,15 +50,28 @@ class FeedManager {
     }
     
     /**
-     * Load feed configurations from API
+     * Load feed configurations from API (both external and local feeds)
      */
     async loadFeedConfigs() {
         try {
-            const response = await this.fetchWithRetry(AnsyblConfig.api.feeds);
-            const feedsConfig = response.data?.feeds || [];
+            // Load external feeds
+            const externalResponse = await this.fetchWithRetry(AnsyblConfig.api.feeds);
+            const externalFeeds = externalResponse.data?.feeds || [];
+            
+            // Load local feeds if admin functionality is available
+            let localFeeds = [];
+            if (window.location.pathname.includes('/admin/') && window.localFeedManager) {
+                try {
+                    localFeeds = await window.localFeedManager.loadFeeds();
+                } catch (error) {
+                    AnsyblConfig.utils.log('warn', 'Failed to load local feeds', error);
+                }
+            }
             
             this.feedConfigs.clear();
-            feedsConfig.forEach(feed => {
+            
+            // Add external feeds
+            externalFeeds.forEach(feed => {
                 if (feed.enabled !== false) {
                     this.feedConfigs.set(feed.id, {
                         id: feed.id,
@@ -67,12 +80,30 @@ class FeedManager {
                         enabled: feed.enabled !== false,
                         order: feed.order || 0,
                         lastFetched: feed.lastFetched || null,
-                        error: null
+                        error: null,
+                        type: 'external'
                     });
                 }
             });
             
-            AnsyblConfig.utils.log('info', `Loaded ${this.feedConfigs.size} feed configurations`);
+            // Add local feeds
+            localFeeds.forEach(feed => {
+                if (feed.published !== false) {
+                    this.feedConfigs.set('local-' + feed.id, {
+                        id: 'local-' + feed.id,
+                        localId: feed.id,
+                        url: feed.url,
+                        name: feed.name,
+                        enabled: feed.published !== false,
+                        order: feed.order || 999, // Local feeds at end by default
+                        lastFetched: feed.updated || null,
+                        error: null,
+                        type: 'local'
+                    });
+                }
+            });
+            
+            AnsyblConfig.utils.log('info', `Loaded ${this.feedConfigs.size} feed configurations (${externalFeeds.length} external, ${localFeeds.length} local)`);
             
         } catch (error) {
             AnsyblConfig.utils.log('error', 'Failed to load feed configurations', error);
@@ -113,7 +144,7 @@ class FeedManager {
     }
     
     /**
-     * Fetch individual feed by ID
+     * Fetch individual feed by ID (handles both local and external feeds)
      */
     async fetchFeed(feedId, force = false) {
         const config = this.feedConfigs.get(feedId);
@@ -132,18 +163,15 @@ class FeedManager {
         }
         
         try {
-            AnsyblConfig.utils.log('debug', `Fetching cached feed: ${feedId}`);
+            let feedData;
             
-            // Get cached data from backend instead of external URL
-            const cacheUrl = `${AnsyblConfig.api.cache}/feeds/${feedId}`;
-            const cacheResponse = await this.fetchWithRetry(cacheUrl);
-            
-            // Extract the processed feed data from cache response
-            if (!cacheResponse.success || !cacheResponse.data?.feed?.data) {
-                throw new Error(`No cached data found for feed: ${feedId}`);
+            if (config.type === 'local') {
+                // Fetch local feed directly
+                feedData = await this.fetchLocalFeed(config);
+            } else {
+                // Fetch external feed from cache
+                feedData = await this.fetchExternalFeed(config);
             }
-            
-            const feedData = cacheResponse.data.feed.data;
             
             // Store processed feed data
             this.feeds.set(feedId, {
@@ -153,7 +181,8 @@ class FeedManager {
                 data: feedData,
                 fetchedAt: new Date().toISOString(),
                 itemCount: this.countFeedItems(feedData),
-                error: null
+                error: null,
+                type: config.type
             });
             
             // Clear any previous errors
@@ -189,6 +218,37 @@ class FeedManager {
             this.emit('feedError', feedId, error);
             throw error;
         }
+    }
+    
+    /**
+     * Fetch local feed data
+     */
+    async fetchLocalFeed(config) {
+        AnsyblConfig.utils.log('debug', `Fetching local feed: ${config.id}`);
+        
+        // Fetch from the public local feed URL directly
+        const response = await this.fetchWithRetry(config.url);
+        
+        // Validate and process the Activity Streams data
+        return this.validateAndProcessFeed(response, config.id);
+    }
+    
+    /**
+     * Fetch external feed from cache
+     */
+    async fetchExternalFeed(config) {
+        AnsyblConfig.utils.log('debug', `Fetching cached external feed: ${config.id}`);
+        
+        // Get cached data from backend instead of external URL
+        const cacheUrl = `${AnsyblConfig.api.cache}/feeds/${config.id}`;
+        const cacheResponse = await this.fetchWithRetry(cacheUrl);
+        
+        // Extract the processed feed data from cache response
+        if (!cacheResponse.success || !cacheResponse.data?.feed?.data) {
+            throw new Error(`No cached data found for feed: ${config.id}`);
+        }
+        
+        return cacheResponse.data.feed.data;
     }
     
     /**
@@ -513,6 +573,7 @@ class FeedManager {
             
             return {
                 id: config.id,
+                localId: config.localId || null,
                 name: config.name,
                 url: config.url,
                 enabled: config.enabled,
@@ -521,7 +582,8 @@ class FeedManager {
                 itemCount: feedData ? feedData.itemCount : 0,
                 status: error ? 'error' : (feedData ? 'active' : 'pending'),
                 error: error ? error.message : null,
-                inRetryQueue: this.retryQueue.has(config.id)
+                inRetryQueue: this.retryQueue.has(config.id),
+                type: config.type || 'external'
             };
         });
     }

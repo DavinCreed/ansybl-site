@@ -5,7 +5,7 @@
             "password_hash": "$2y$10$LCniayxDCMVvjLpPhSl6wuc/Ii5SfW.f4TFXJlkJ2lbYNISJV6SF6",
             "role": "admin",
             "created": "2025-08-16T06:38:25+00:00",
-            "last_login": "2025-08-16T06:38:35+00:00"
+            "last_login": "2025-08-17T21:35:19+00:00"
         }
     },
     "settings": {
@@ -15,7 +15,7 @@
     },
     "meta": {
         "created": "2025-08-16T06:38:25+00:00",
-        "modified": "2025-08-16T06:38:35+00:00",
+        "modified": "2025-08-17T21:35:19+00:00",
         "schema_version": "1.0"
     }
 }
