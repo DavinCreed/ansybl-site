@@ -674,6 +674,20 @@ class UIManager {
         AnsyblConfig.utils.log('debug', `Sort changed to: ${sort}`);
     }
     
+    /**
+     * Filter by specific feed (called from menu)
+     */
+    filterByFeed(feedId) {
+        this.setFilter(feedId);
+    }
+    
+    /**
+     * Show all feeds (called from menu)
+     */
+    showAllFeeds() {
+        this.setFilter('all');
+    }
+    
     changePage(page) {
         const totalPages = Math.ceil(this.getTotalItemsCount() / AnsyblConfig.ui.itemsPerPage);
         

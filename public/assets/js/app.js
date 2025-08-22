@@ -9,6 +9,7 @@ window.AnsyblApp = {
     ui: null,
     feedManager: null,
     activityRenderer: null,
+    menuRenderer: null,
     config: null
 };
 
@@ -27,7 +28,8 @@ async function initializeApp() {
         // Initialize components in order
         if (typeof FeedManager === 'undefined' || 
             typeof UIManager === 'undefined' || 
-            typeof ActivityRenderer === 'undefined') {
+            typeof ActivityRenderer === 'undefined' ||
+            typeof MenuRenderer === 'undefined') {
             throw new Error('Required modules not loaded');
         }
         
@@ -35,6 +37,7 @@ async function initializeApp() {
         window.AnsyblApp.activityRenderer = new ActivityRenderer();
         window.AnsyblApp.feedManager = new FeedManager(AnsyblConfig.api.base);
         window.AnsyblApp.ui = new UIManager();
+        window.AnsyblApp.menuRenderer = window.menuRenderer; // Use global instance
         
         // Set dependencies
         window.AnsyblApp.ui.feedManager = window.AnsyblApp.feedManager;
@@ -57,6 +60,9 @@ async function initializeApp() {
             window.AnsyblApp.ui.hideLoading();
             window.AnsyblApp.ui.showError('Failed to load feeds: ' + error.message);
         });
+        
+        // Set up menu integration events
+        setupMenuIntegration();
         
         // Load initial data
         await loadInitialData();
@@ -208,15 +214,134 @@ if ('serviceWorker' in navigator) {
 }
 
 /**
+ * Setup menu integration with feed filtering
+ */
+function setupMenuIntegration() {
+    // Listen for menu-triggered feed filtering
+    document.addEventListener('menuFilterFeed', (event) => {
+        const { feedId } = event.detail;
+        
+        if (window.AnsyblApp.ui && window.AnsyblApp.feedManager) {
+            // Update feed filter in UI
+            const feedFilter = document.getElementById('feed-filter');
+            if (feedFilter) {
+                feedFilter.value = feedId;
+                feedFilter.dispatchEvent(new Event('change'));
+            }
+            
+            // Filter content by feed
+            window.AnsyblApp.ui.filterByFeed(feedId);
+            
+            // Update URL hash for deep linking
+            if (feedId !== 'all') {
+                window.location.hash = `feed-${feedId}`;
+            } else {
+                window.location.hash = '';
+            }
+        }
+    });
+    
+    // Listen for show all feeds command
+    document.addEventListener('menuShowAllFeeds', () => {
+        if (window.AnsyblApp.ui) {
+            const feedFilter = document.getElementById('feed-filter');
+            if (feedFilter) {
+                feedFilter.value = 'all';
+                feedFilter.dispatchEvent(new Event('change'));
+            }
+            
+            window.AnsyblApp.ui.showAllFeeds();
+            window.location.hash = '';
+        }
+    });
+    
+    // Listen for refresh content command
+    document.addEventListener('refreshContent', () => {
+        if (window.AnsyblApp.feedManager) {
+            window.AnsyblApp.feedManager.fetchAllFeeds();
+        }
+    });
+    
+    // Listen for configuration updates
+    document.addEventListener('configUpdated', (event) => {
+        if (event.detail.type === 'menu' && window.AnsyblApp.menuRenderer) {
+            window.AnsyblApp.menuRenderer.handleMenuConfigUpdate(event.detail.config);
+        }
+    });
+    
+    // Handle deep linking on page load
+    handleDeepLinking();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleDeepLinking);
+}
+
+/**
+ * Handle deep linking for feed filtering
+ */
+function handleDeepLinking() {
+    const hash = window.location.hash.substring(1); // Remove #
+    
+    if (hash.startsWith('feed-')) {
+        const feedId = hash.replace('feed-', '');
+        
+        // Convert menu feed ID format to feedManager format
+        let actualFeedId = feedId;
+        if (feedId.includes(':')) {
+            const [type, id] = feedId.split(':');
+            if (type === 'local') {
+                // Local feeds are stored as "local-{id}" in feedManager
+                actualFeedId = `local-${id}`;
+            } else if (type === 'external') {
+                // External feeds use just the ID
+                actualFeedId = id;
+            }
+        }
+        
+        // Wait for app to be ready
+        if (window.AnsyblApp.initialized && window.AnsyblApp.ui) {
+            window.AnsyblApp.ui.filterByFeed(actualFeedId);
+            
+            if (window.AnsyblApp.menuRenderer) {
+                window.AnsyblApp.menuRenderer.updateActiveMenuItem(feedId);
+            }
+        } else {
+            // Wait for initialization
+            const checkInitialized = setInterval(() => {
+                if (window.AnsyblApp.initialized && window.AnsyblApp.ui) {
+                    clearInterval(checkInitialized);
+                    window.AnsyblApp.ui.filterByFeed(actualFeedId);
+                    
+                    if (window.AnsyblApp.menuRenderer) {
+                        window.AnsyblApp.menuRenderer.updateActiveMenuItem(feedId);
+                    }
+                }
+            }, 100);
+        }
+    } else if (hash === 'feeds' || hash === '') {
+        // Show all feeds
+        if (window.AnsyblApp.initialized && window.AnsyblApp.ui) {
+            window.AnsyblApp.ui.showAllFeeds();
+            
+            if (window.AnsyblApp.menuRenderer) {
+                window.AnsyblApp.menuRenderer.updateActiveMenuItem('all');
+            }
+        }
+    }
+}
+
+/**
  * Expose global functions for debugging
  */
 window.AnsyblDebug = {
     getApp: () => window.AnsyblApp,
     reloadFeeds: () => window.AnsyblApp.feedManager?.fetchAllFeeds(),
     clearCache: () => window.AnsyblApp.feedManager?.clearCache(),
+    refreshMenu: () => window.AnsyblApp.menuRenderer?.refreshMenu(),
     getState: () => ({
         initialized: window.AnsyblApp.initialized,
         feeds: window.AnsyblApp.feedManager?.feeds,
-        config: window.AnsyblApp.config
+        config: window.AnsyblApp.config,
+        menu: window.AnsyblApp.menuRenderer?.getCurrentMenu()
     })
 };

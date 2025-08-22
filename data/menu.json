@@ -1,0 +1,74 @@
+{
+    "name": "menu",
+    "config": {
+        "version": "1.0",
+        "menus": {
+            "primary": {
+                "name": "Primary Navigation",
+                "location": "header",
+                "items": [
+                    {
+                        "id": "home",
+                        "type": "link",
+                        "title": "Home",
+                        "url": "/",
+                        "order": 1,
+                        "visible": true,
+                        "target": "_self",
+                        "icon": "\ud83c\udfe0"
+                    },
+                    {
+                        "id": "test-feed",
+                        "type": "feed",
+                        "title": "Test Feed",
+                        "feed_id": "local:test-home",
+                        "url": "#feed-local:test-home",
+                        "order": 2,
+                        "visible": true,
+                        "target": "_self"
+                    },
+                    {
+                        "id": "external-link",
+                        "type": "custom",
+                        "title": "External Link",
+                        "url": "https://example.com",
+                        "order": 3,
+                        "visible": true,
+                        "target": "_blank",
+                        "icon": "\ud83d\udd17"
+                    }
+                ]
+            }
+        },
+        "meta": {
+            "created": "2025-08-18T04:00:00+00:00",
+            "modified": "2025-08-18T04:00:00+00:00",
+            "schema_version": "1.0"
+        }
+    },
+    "exists": true,
+    "menus": {
+        "primary": {
+            "name": "Primary Navigation",
+            "location": "header",
+            "items": [
+                {
+                    "id": "menu-item-1755489704680",
+                    "type": "feed",
+                    "title": "Home",
+                    "feed_id": "local:test-home",
+                    "target": "_self",
+                    "visible": true,
+                    "order": 1,
+                    "url": "#feed-local:test-home"
+                }
+            ]
+        }
+    },
+    "version": "1.0",
+    "meta": {
+        "created": "2025-08-18T04:02:11+00:00",
+        "modified": "2025-08-18T04:02:11+00:00",
+        "schema_version": "1.0"
+    }
+}

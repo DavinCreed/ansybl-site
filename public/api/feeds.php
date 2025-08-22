@@ -23,11 +23,16 @@ use AnsyblSite\Core\FeedParser;
 use AnsyblSite\Core\FeedCache;
 
 try {
+    error_log("feeds.php: Starting initialization");
     // Initialize core components
     $fileManager = new ConcurrentFileManager('../../data');
+    error_log("feeds.php: FileManager created");
     $configManager = new ConfigManager($fileManager);
+    error_log("feeds.php: ConfigManager created");
     $feedParser = new FeedParser();
+    error_log("feeds.php: FeedParser created");
     $feedCache = new FeedCache($fileManager);
+    error_log("feeds.php: FeedCache created");
     
     $method = $_SERVER['REQUEST_METHOD'];
     $path = $_SERVER['PATH_INFO'] ?? '';
@@ -94,10 +99,16 @@ function handleGetRequest($path, $configManager, $feedParser, $feedCache) {
  * Handle POST requests
  */
 function handlePostRequest($path, $configManager, $feedParser, $feedCache) {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $inputBody = file_get_contents('php://input');
+    $input = null;
     
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        sendError(400, 'Invalid JSON input');
+    // Only try to parse JSON if there's actually content
+    if (!empty($inputBody)) {
+        $input = json_decode($inputBody, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            sendError(400, 'Invalid JSON input');
+        }
     }
     
     switch ($path) {
@@ -114,6 +125,7 @@ function handlePostRequest($path, $configManager, $feedParser, $feedCache) {
             
         case '/refresh':
             // Refresh all feeds
+            error_log("Refresh all feeds endpoint called");
             refreshAllFeeds($configManager, $feedParser, $feedCache);
             break;
             
@@ -307,7 +319,9 @@ function getFeed($feedId, $configManager, $feedParser, $feedCache) {
             $feedCache->store($feedId, $feedData, 300);
         }
         
-        $items = $feedParser->extractItems($feedData);
+        // Handle cached data structure vs raw feed data
+        $actualFeedData = isset($feedData['data']) ? $feedData['data'] : $feedData;
+        $items = $feedParser->extractItems($actualFeedData);
         
         sendSuccess([
             'feed' => $feed,
@@ -473,7 +487,7 @@ function deleteFeed($feedId, $configManager, $feedCache) {
         $configManager->set('feeds', $feedsConfig);
         
         // Clear cache for this feed
-        $feedCache->clearFeed($feedId);
+        $feedCache->delete($feedId);
         
         sendSuccess(['message' => 'Feed deleted successfully']);
         
@@ -528,7 +542,7 @@ function refreshAllFeeds($configManager, $feedParser, $feedCache) {
             
             try {
                 // Clear cache for this feed
-                $feedCache->clearFeed($feed['id']);
+                $feedCache->delete($feed['id']);
                 
                 // Fetch fresh data
                 $feedData = fetchFeedData($feed['url'], $feedParser);
@@ -588,7 +602,7 @@ function refreshFeed($feedId, $configManager, $feedParser, $feedCache) {
         }
         
         // Clear cache and fetch fresh data
-        $feedCache->clearFeed($feedId);
+        $feedCache->delete($feedId);
         $feedData = fetchFeedData($feed['url'], $feedParser);
         $feedCache->store($feedId, $feedData, 300);
         
@@ -611,27 +625,97 @@ function refreshFeed($feedId, $configManager, $feedParser, $feedCache) {
  */
 
 function fetchFeedData($url, $feedParser) {
-    $context = stream_context_create([
-        'http' => [
-            'timeout' => 30,
-            'user_agent' => 'Ansybl Site Feed Reader 1.0',
-            'header' => 'Accept: application/activity+json,application/ld+json,application/json'
-        ]
-    ]);
+    error_log("fetchFeedData: Starting fetch for URL: $url");
     
-    $data = file_get_contents($url, false, $context);
-    
-    if ($data === false) {
-        throw new Exception("Failed to fetch feed from URL: $url");
+    try {
+        // Try cURL first (more reliable for HTTPS)
+        if (function_exists('curl_init')) {
+            error_log("fetchFeedData: Using cURL for HTTP request");
+            
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $url,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 5,
+                CURLOPT_USERAGENT => 'Ansybl Site Feed Reader 1.0',
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/activity+json,application/ld+json,application/json'
+                ],
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2
+            ]);
+            
+            $data = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+            
+            if ($data === false || !empty($curlError)) {
+                error_log("fetchFeedData: cURL failed. Error: $curlError, HTTP Code: $httpCode");
+                throw new Exception("Failed to fetch feed with cURL: $curlError");
+            }
+            
+            if ($httpCode < 200 || $httpCode >= 300) {
+                error_log("fetchFeedData: HTTP error. Code: $httpCode");
+                throw new Exception("HTTP error $httpCode when fetching feed from $url");
+            }
+            
+            error_log("fetchFeedData: cURL success - " . strlen($data) . " bytes received");
+        } else {
+            // Fallback to file_get_contents with improved context
+            error_log("fetchFeedData: cURL not available, using file_get_contents");
+            
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 30,
+                    'user_agent' => 'Ansybl Site Feed Reader 1.0',
+                    'header' => 'Accept: application/activity+json,application/ld+json,application/json',
+                    'follow_location' => 1,
+                    'max_redirects' => 5
+                ],
+                'https' => [
+                    'timeout' => 30,
+                    'user_agent' => 'Ansybl Site Feed Reader 1.0',
+                    'header' => 'Accept: application/activity+json,application/ld+json,application/json',
+                    'follow_location' => 1,
+                    'max_redirects' => 5,
+                    'verify_peer' => true,
+                    'verify_peer_name' => true
+                ]
+            ]);
+            
+            $data = file_get_contents($url, false, $context);
+            
+            if ($data === false) {
+                $error = error_get_last();
+                error_log("fetchFeedData: file_get_contents failed. Last error: " . json_encode($error));
+                throw new Exception("Failed to fetch feed from URL: $url. Error: " . ($error['message'] ?? 'Unknown error'));
+            }
+            
+            error_log("fetchFeedData: file_get_contents success - " . strlen($data) . " bytes received");
+        }
+        
+        error_log("fetchFeedData: Attempting to decode JSON");
+        $json = json_decode($data, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log("fetchFeedData: JSON decode failed: " . json_last_error_msg());
+            error_log("fetchFeedData: First 500 chars of data: " . substr($data, 0, 500));
+            throw new Exception("Invalid JSON in feed from $url: " . json_last_error_msg());
+        }
+        
+        error_log("fetchFeedData: JSON decoded successfully, calling feedParser->parse");
+        $result = $feedParser->parse($data); // Pass raw JSON string, not decoded array
+        error_log("fetchFeedData: feedParser->parse completed successfully");
+        
+        return $result;
+        
+    } catch (Exception $e) {
+        error_log("fetchFeedData: Exception caught: " . $e->getMessage());
+        throw $e;
     }
-    
-    $json = json_decode($data, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception("Invalid JSON in feed: " . json_last_error_msg());
-    }
-    
-    return $feedParser->parse($json);
 }
 
 function generateFeedId($name, $existingFeeds) {

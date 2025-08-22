@@ -81,6 +81,11 @@ function handleGetRequest($path, $configManager) {
             getConfig('styles', $configManager);
             break;
             
+        case '/menu':
+            // Get menu configuration
+            getConfig('menu', $configManager);
+            break;
+            
         case '/list':
             // List available configurations
             listConfigs($configManager);
@@ -151,6 +156,11 @@ function handlePutRequest($path, $configManager) {
         case '/styles':
             // Update styles configuration
             updateConfig('styles', $input, $configManager);
+            break;
+            
+        case '/menu':
+            // Update menu configuration
+            updateConfig('menu', $input, $configManager);
             break;
             
         default:

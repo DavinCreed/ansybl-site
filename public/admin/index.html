@@ -26,6 +26,7 @@
                     <ul class="admin-nav-list">
                         <li><a href="#feeds" class="nav-link active" data-section="feeds">Feeds</a></li>
                         <li><a href="#config" class="nav-link" data-section="config">Site Config</a></li>
+                        <li><a href="#menus" class="nav-link" data-section="menus">Menus</a></li>
                         <li><a href="#styles" class="nav-link" data-section="styles">Styles</a></li>
                         <li><a href="#cache" class="nav-link" data-section="cache">Cache</a></li>
                     </ul>
@@ -113,7 +114,17 @@
                     
                     <!-- Existing Feeds List -->
                     <div class="card">
-                        <h3>Current Feeds</h3>
+                        <div class="card-header-with-actions">
+                            <h3>Current Feeds</h3>
+                            <div class="card-actions">
+                                <button type="button" id="refresh-all-feeds" class="button secondary" title="Refresh all feeds and clear cache">
+                                    🔄 Refresh All
+                                </button>
+                                <button type="button" id="clear-feed-cache" class="button secondary" title="Clear feed cache">
+                                    🗑️ Clear Cache
+                                </button>
+                            </div>
+                        </div>
                         <div id="feeds-list" class="feeds-list">
                             <!-- Dynamic feed items will be inserted here -->
                         </div>
@@ -165,6 +176,15 @@
                                 </select>
                             </div>
                         </form>
+                        
+                        <div class="config-actions">
+                            <button type="button" class="button secondary preview-changes-btn">
+                                👁️ Preview Changes
+                            </button>
+                            <button type="button" class="button secondary reset-defaults-btn">
+                                🔄 Reset to Defaults
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="card">
@@ -203,6 +223,34 @@
                                 </label>
                             </div>
                         </form>
+                        
+                        <div class="config-actions">
+                            <button type="button" class="button secondary" onclick="window.configManager && window.configManager.exportConfig()">
+                                📤 Export Config
+                            </button>
+                            <label class="button secondary import-config-btn">
+                                📥 Import Config
+                                <input type="file" accept=".json" style="display: none;" onchange="window.configManager && window.configManager.importConfig(this.files[0])">
+                            </label>
+                        </div>
+                    </div>
+                    
+                </div>
+            </section>
+            
+            <!-- Menu Management Section -->
+            <section id="menus-section" class="admin-section">
+                <header class="section-header">
+                    <h2>Menu Management</h2>
+                    <p>Configure site navigation menus and menu items</p>
+                </header>
+                
+                <div class="section-content">
+                    
+                    <div class="card">
+                        <div id="menu-builder" class="menu-builder">
+                            <!-- Menu builder content will be dynamically generated -->
+                        </div>
                     </div>
                     
                 </div>
@@ -375,6 +423,8 @@
     <!-- Scripts -->
     <script src="../assets/js/config.js"></script>
     <script src="assets/js/auth.js"></script>
+    <script src="assets/js/configManager.js"></script>
+    <script src="assets/js/menuManager.js"></script>
     <script src="assets/js/localFeedManager.js"></script>
     <script src="assets/js/feedItemManager.js"></script>
     <script src="assets/js/mediaManager.js"></script>

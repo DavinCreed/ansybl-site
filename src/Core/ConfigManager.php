@@ -293,6 +293,27 @@ class ConfigManager
                 'meta' => ['type' => 'object']
             ]
         ]);
+        
+        $this->validator->registerSchema('config-menu', [
+            'required' => ['version', 'menus'],
+            'properties' => [
+                'version' => ['type' => 'string'],
+                'menus' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'primary' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'name' => ['type' => 'string'],
+                                'location' => ['type' => 'string'],
+                                'items' => ['type' => 'array']
+                            ]
+                        ]
+                    ]
+                ],
+                'meta' => ['type' => 'object']
+            ]
+        ]);
     }
     
     private function registerDefaults(): void
@@ -364,6 +385,44 @@ class ConfigManager
             'responsive' => [
                 'mobile_breakpoint' => '768px',
                 'tablet_breakpoint' => '1024px'
+            ],
+            'meta' => [
+                'created' => date('c'),
+                'schema_version' => '1.0'
+            ]
+        ];
+        
+        $this->defaults['menu'] = [
+            'version' => '1.0',
+            'menus' => [
+                'primary' => [
+                    'name' => 'Primary Navigation',
+                    'location' => 'header',
+                    'items' => [
+                        [
+                            'id' => 'home',
+                            'type' => 'link',
+                            'title' => 'Home',
+                            'url' => '/',
+                            'order' => 1,
+                            'visible' => true,
+                            'target' => '_self',
+                            'css_class' => '',
+                            'icon' => ''
+                        ],
+                        [
+                            'id' => 'feeds',
+                            'type' => 'link',
+                            'title' => 'All Feeds',
+                            'url' => '#feeds',
+                            'order' => 2,
+                            'visible' => true,
+                            'target' => '_self',
+                            'css_class' => '',
+                            'icon' => ''
+                        ]
+                    ]
+                ]
             ],
             'meta' => [
                 'created' => date('c'),

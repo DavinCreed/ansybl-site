@@ -34,7 +34,7 @@ const AnsyblConfig = {
     },
   },
 
-  // UI Settings
+  // UI Settings (defaults - will be overridden by backend config)
   ui: {
     // Pagination
     itemsPerPage: 10,
@@ -134,9 +134,9 @@ const AnsyblConfig = {
 
   // Debug settings
   debug: {
-    enabled: false, // Set to true for development
+    enabled: true, // Set to true for development
     verboseLogging: false,
-    logLevel: 'info', // 'debug', 'info', 'warn', 'error'
+    logLevel: 'debug', // 'debug', 'info', 'warn', 'error'
   },
 
   // Feature flags
@@ -340,6 +340,98 @@ AnsyblConfig.cache = {
     }
   },
 };
+
+// Configuration loader for dynamic backend settings
+AnsyblConfig.loader = {
+  loaded: false,
+  
+  /**
+   * Load site configuration from backend
+   */
+  async loadSiteConfig() {
+    try {
+      const response = await fetch(AnsyblConfig.api.config + '/site');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        this.applyConfig(data.data);
+        this.loaded = true;
+        AnsyblConfig.utils.log('info', 'Site configuration loaded from backend');
+      } else {
+        AnsyblConfig.utils.log('warn', 'Failed to load site config, using defaults');
+      }
+    } catch (error) {
+      AnsyblConfig.utils.log('error', 'Error loading site config:', error);
+    }
+  },
+  
+  /**
+   * Apply configuration from backend
+   */
+  applyConfig(config) {
+    // Update UI settings from backend config
+    if (config.display) {
+      AnsyblConfig.ui.itemsPerPage = config.display.items_per_page || AnsyblConfig.ui.itemsPerPage;
+      AnsyblConfig.ui.excerptLength = config.display.excerpt_length || AnsyblConfig.ui.excerptLength;
+      AnsyblConfig.ui.showTimestamps = config.display.show_timestamps !== undefined 
+        ? config.display.show_timestamps 
+        : AnsyblConfig.ui.showTimestamps;
+    }
+    
+    // Update site information
+    if (config.site) {
+      AnsyblConfig.site = {
+        ...AnsyblConfig.site,
+        title: config.site.title || AnsyblConfig.site?.title || 'Ansybl Site',
+        description: config.site.description || AnsyblConfig.site?.description || '',
+        language: config.site.language || AnsyblConfig.site?.language || 'en',
+        timezone: config.site.timezone || AnsyblConfig.site?.timezone || 'UTC'
+      };
+      
+      // Update page title
+      if (config.site.title && typeof document !== 'undefined') {
+        document.title = config.site.title;
+      }
+    }
+    
+    // Update features
+    if (config.features) {
+      AnsyblConfig.features.search = config.features.search_enabled !== undefined 
+        ? config.features.search_enabled 
+        : AnsyblConfig.features.search;
+    }
+    
+    // Dispatch config loaded event
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('ansyblConfigLoaded', { 
+        detail: { config: config } 
+      }));
+    }
+  },
+  
+  /**
+   * Get current effective configuration
+   */
+  getCurrentConfig() {
+    return {
+      site: AnsyblConfig.site,
+      ui: AnsyblConfig.ui,
+      features: AnsyblConfig.features
+    };
+  }
+};
+
+// Auto-load configuration when DOM is ready
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      AnsyblConfig.loader.loadSiteConfig();
+    });
+  } else {
+    // DOM already loaded
+    AnsyblConfig.loader.loadSiteConfig();
+  }
+}
 
 // Make config globally available
 window.AnsyblConfig = AnsyblConfig;

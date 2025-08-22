@@ -1,0 +1,51 @@
+{
+    "name": "site",
+    "config": {
+        "version": "1.0",
+        "site": {
+            "title": "My Test Site",
+            "description": "Testing configuration changes",
+            "language": "en",
+            "timezone": "UTC"
+        },
+        "display": {
+            "theme": "default",
+            "items_per_page": 15,
+            "show_timestamps": true,
+            "date_format": "Y-m-d H:i:s",
+            "excerpt_length": 200
+        },
+        "features": {
+            "search_enabled": true,
+            "comments_enabled": false,
+            "social_sharing": true
+        },
+        "meta": {
+            "created": "2025-08-18T02:42:42+00:00",
+            "modified": "2025-08-18T02:42:42+00:00",
+            "schema_version": "1.0"
+        }
+    },
+    "exists": true,
+    "site": {
+        "title": "Test Podcast",
+        "description": "Testing out the podcast site. This should be a fairly basic podcast feed site.",
+        "language": "en",
+        "timezone": "UTC"
+    },
+    "display": {
+        "items_per_page": 10,
+        "excerpt_length": 150,
+        "date_format": "Y-m-d H:i:s",
+        "show_timestamps": false
+    },
+    "features": {
+        "search_enabled": false
+    },
+    "version": "1.0",
+    "meta": {
+        "created": "2025-08-18T02:47:31+00:00",
+        "modified": "2025-08-18T02:47:31+00:00",
+        "schema_version": "1.0"
+    }
+}

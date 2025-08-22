@@ -106,6 +106,27 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Menu Icons */
+.nav-icon {
+  margin-right: var(--spacing-xs);
+  display: inline-block;
+}
+
+/* Menu Item Types */
+.nav-item-feed .nav-link {
+  position: relative;
+}
+
+.nav-item-feed .nav-link::before {
+  content: "📡";
+  margin-right: var(--spacing-xs);
+}
+
+.nav-item-custom .nav-link::before {
+  content: "🔗";
+  margin-right: var(--spacing-xs);
+}
+
 /* Mobile Menu Toggle */
 .mobile-menu-toggle {
   display: none;

@@ -58,14 +58,18 @@ class FeedManager {
             const externalResponse = await this.fetchWithRetry(AnsyblConfig.api.feeds);
             const externalFeeds = externalResponse.data?.feeds || [];
             
-            // Load local feeds if admin functionality is available
+            // Load local feeds
             let localFeeds = [];
-            if (window.location.pathname.includes('/admin/') && window.localFeedManager) {
-                try {
+            try {
+                if (window.location.pathname.includes('/admin/') && window.localFeedManager) {
+                    // In admin, use the admin API
                     localFeeds = await window.localFeedManager.loadFeeds();
-                } catch (error) {
-                    AnsyblConfig.utils.log('warn', 'Failed to load local feeds', error);
+                } else {
+                    // On frontend, load local feeds by discovering published .ansybl files
+                    localFeeds = await this.discoverLocalFeeds();
                 }
+            } catch (error) {
+                AnsyblConfig.utils.log('warn', 'Failed to load local feeds', error);
             }
             
             this.feedConfigs.clear();
@@ -234,21 +238,33 @@ class FeedManager {
     }
     
     /**
-     * Fetch external feed from cache
+     * Fetch external feed from feeds API
      */
     async fetchExternalFeed(config) {
-        AnsyblConfig.utils.log('debug', `Fetching cached external feed: ${config.id}`);
+        AnsyblConfig.utils.log('debug', `Fetching external feed: ${config.id}`);
         
-        // Get cached data from backend instead of external URL
-        const cacheUrl = `${AnsyblConfig.api.cache}/feeds/${config.id}`;
-        const cacheResponse = await this.fetchWithRetry(cacheUrl);
-        
-        // Extract the processed feed data from cache response
-        if (!cacheResponse.success || !cacheResponse.data?.feed?.data) {
-            throw new Error(`No cached data found for feed: ${config.id}`);
+        try {
+            // Get feed data from feeds API which fetches and processes external feeds
+            const feedUrl = `${AnsyblConfig.api.feeds}/${config.id}`;
+            AnsyblConfig.utils.log('debug', `Fetching from URL: ${feedUrl}`);
+            const feedResponse = await this.fetchWithRetry(feedUrl);
+            
+            AnsyblConfig.utils.log('debug', `Feed response received for: ${config.id}`);
+            
+            // Extract the processed feed data from feeds API response
+            if (!feedResponse.success || !feedResponse.data) {
+                throw new Error(`No feed data found for feed: ${config.id}`);
+            }
+            
+            // Get the raw feed data from the API response
+            const rawFeedData = feedResponse.data.data?.data || feedResponse.data.data || feedResponse.data;
+            
+            // Process the external feed through the same validation and processing pipeline as local feeds
+            return this.validateAndProcessFeed(rawFeedData, config.id);
+        } catch (error) {
+            AnsyblConfig.utils.log('error', `Failed to fetch external feed ${config.id}:`, error);
+            throw error;
         }
-        
-        return cacheResponse.data.feed.data;
     }
     
     /**
@@ -329,7 +345,8 @@ class FeedManager {
                 
                 // Activity properties
                 actor: this.processActor(item.actor),
-                object: item.object ? this.processObject(item.object) : null,
+                object: item.object ? this.processObject(item.object) : 
+                       (item.type === 'Collection' ? item : null),
                 
                 // Common properties
                 name: item.name || null,
@@ -725,6 +742,74 @@ class FeedManager {
         }
         
         AnsyblConfig.utils.log('debug', `Event emitted: ${event}`, args);
+    }
+    
+    /**
+     * Discover local feeds by checking the local feeds API
+     */
+    async discoverLocalFeeds() {
+        const localFeeds = [];
+        
+        try {
+            // Get local feeds from the API (which only includes properly managed feeds)
+            const response = await this.fetchWithRetry('/api/local-feeds.php');
+            
+            if (response.success && response.data?.feeds) {
+                const apiFeeds = response.data.feeds;
+                
+                for (const feed of apiFeeds) {
+                    // Only include published feeds
+                    if (feed.published) {
+                        localFeeds.push({
+                            id: feed.id,
+                            name: feed.name || feed.id,
+                            description: feed.description || '',
+                            url: `/feeds/${feed.id}.ansybl`,
+                            published: true,
+                            updated: feed.updated || null,
+                            totalItems: feed.totalItems || 0
+                        });
+                        
+                        AnsyblConfig.utils.log('debug', `Discovered local feed via API: ${feed.id}`);
+                    }
+                }
+            } else {
+                AnsyblConfig.utils.log('warn', 'No local feeds found in API response');
+            }
+            
+        } catch (error) {
+            AnsyblConfig.utils.log('error', 'Failed to discover local feeds via API, falling back to hardcoded list', error);
+            
+            // Fallback: try to fetch feeds directly (this ensures compatibility)
+            const knownLocalFeeds = ['test-home', 'test-local-feed'];  // Removed test-local-feed-1 since it has no backend data
+            
+            for (const feedId of knownLocalFeeds) {
+                try {
+                    const feedUrl = `/feeds/${feedId}.ansybl`;
+                    const response = await fetch(feedUrl);
+                    
+                    if (response.ok) {
+                        const feedData = await response.json();
+                        
+                        localFeeds.push({
+                            id: feedId,
+                            name: feedData.name || feedId,
+                            description: feedData.summary || '',
+                            url: feedUrl,
+                            published: true,
+                            updated: feedData.updated || null,
+                            totalItems: feedData.totalItems || (feedData.orderedItems ? feedData.orderedItems.length : 0)
+                        });
+                        
+                        AnsyblConfig.utils.log('debug', `Discovered local feed via fallback: ${feedId}`);
+                    }
+                } catch (error) {
+                    AnsyblConfig.utils.log('debug', `Local feed ${feedId} not accessible: ${error.message}`);
+                }
+            }
+        }
+        
+        return localFeeds;
     }
 }
 
